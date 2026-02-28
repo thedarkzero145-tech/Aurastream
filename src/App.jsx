@@ -29,24 +29,22 @@ export default function App() {
     setFinalVideoUrl('');
 
     if (isDemoMode) {
-      setLoadingMsg('Free Demo Mode: Initializing Prompt-Aware Realtime Synthesis...');
+      setLoadingMsg('Free Demo Mode: Initializing Fixed Proxy Stream...');
       setProgressWidth(10);
       try {
         for (let i = 1; i <= 3; i++) {
-          await new Promise(r => setTimeout(r, 1200));
+          await new Promise(r => setTimeout(r, 1000));
           setProgressWidth(10 + i * 25);
-          setLoadingMsg(`Free Demo Mode: Neural processing visual prompt...`);
+          setLoadingMsg(`Free Demo Mode: Bypassing GPU Queue...`);
         }
 
-        // Since true video GPUs cost money, we use a clever workaround for the "Free Mode".
-        // We use Pollinations.ai to generate a real image from their prompt instantly, 
-        // and we will apply CSS motion to it in the UI to make it feel alive!
-        const encodedPrompt = encodeURIComponent(prompt + ", highly detailed, cinematic lighting, 8k resolution, photorealistic");
-        const realPromptUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1280&height=720&nologo=true`;
+        // Since true video GPUs cost money, we provide a breathtaking real Sora Demo video 
+        // to show what the UI feels like without burning any credits.
+        const demoVidUrl = "https://cdn.openai.com/sora/videos/tokyo-walk.mp4";
 
         setProgressWidth(100);
-        setFinalVideoUrl(realPromptUrl); // It's an image, but we will render it dynamically
-        setGallery(prev => [realPromptUrl, ...prev]);
+        setFinalVideoUrl(demoVidUrl);
+        setGallery(prev => [demoVidUrl, ...prev]);
       } finally {
         setTimeout(() => {
           setIsGenerating(false);
@@ -263,48 +261,18 @@ export default function App() {
                 )}
 
                 {finalVideoUrl && !isGenerating && (
-                  finalVideoUrl.includes('pollinations') ? (
-                    <div className="w-full h-full object-cover z-10 absolute inset-0 overflow-hidden bg-black flex items-center justify-center animate-in fade-in">
-                      {/* Simulating slow Pan/Zoom Ken Burns effect on the exact prompt image! */}
-                      <img
-                        src={finalVideoUrl}
-                        className="w-full h-full object-cover animate-[ping_20s_ease-in-out_infinite_alternate-reverse]"
-                        style={{
-                          animationName: 'kenburns',
-                          animationDuration: '20s',
-                          animationIterationCount: 'infinite',
-                          animationDirection: 'alternate-reverse',
-                          animationTimingFunction: 'linear'
-                        }}
-                        alt="Neural Generation"
-                      />
-                      <style>{`
-                        @keyframes kenburns {
-                          0% { transform: scale(1) translate(0, 0); }
-                          50% { transform: scale(1.15) translate(-2%, 2%); }
-                          100% { transform: scale(1.05) translate(2%, -2%); }
-                        }
-                      `}</style>
-                      {/* Subliminal Audio visual cue */}
-                      <div className="absolute bottom-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-gray-700 flex items-center gap-2">
-                        <div className="w-2 h-2 bg-pink-500 rounded-full animate-pulse"></div>
-                        <span className="text-[10px] text-pink-300 font-medium tracking-wide">AUDIO: {audioStyle.split(',')[0]}</span>
-                      </div>
-                    </div>
-                  ) : (
-                    <video
-                      src={finalVideoUrl}
-                      controls
-                      autoPlay
-                      loop
-                      className="w-full h-full object-cover z-10 absolute inset-0 animate-in fade-in"
-                    ></video>
-                  )
+                  <video
+                    src={finalVideoUrl}
+                    controls
+                    autoPlay
+                    loop
+                    className="w-full h-full object-cover z-10 absolute inset-0 animate-in fade-in"
+                  ></video>
                 )}
               </div>
 
               <div className="flex justify-between items-center px-4">
-                <span className="text-xs text-gray-500">Duration: 10s | Engine: <span className="text-indigo-400 font-semibold">{finalVideoUrl.includes('pollinations') ? 'Neural Proxy (Realtime AI)' : 'Sora 2 (Image+NativeAudio)'}</span></span>
+                <span className="text-xs text-gray-500">Duration: 10s | Engine: <span className="text-indigo-400 font-semibold">{isDemoMode ? 'OpenAI Fixed Sora Sample' : 'Sora 2 (Image+NativeAudio)'}</span></span>
                 {finalVideoUrl && <button className="text-xs text-indigo-400 hover:text-white transition">Download 4K .MP4</button>}
               </div>
             </div>
@@ -323,11 +291,7 @@ export default function App() {
               ) : (
                 gallery.map((vid, idx) => (
                   <div key={idx} className="glass aspect-video rounded-xl border border-gray-800 overflow-hidden relative group shadow-lg">
-                    {vid.includes('pollinations') ? (
-                      <img src={vid} className="w-full h-full object-cover" alt="Gallery Thumbnail" />
-                    ) : (
-                      <video src={vid} className="w-full h-full object-cover"></video>
-                    )}
+                    <video src={vid} className="w-full h-full object-cover"></video>
                     <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all duration-300">
                       <a href={vid} target="_blank" rel="noreferrer" className="bg-indigo-600 text-white rounded-full w-14 h-14 flex items-center justify-center cursor-pointer shadow-[0_0_20px_rgba(79,70,229,0.5)] hover:scale-110 transition">
                         <Play fill="currentColor" size={20} className="ml-1" />
