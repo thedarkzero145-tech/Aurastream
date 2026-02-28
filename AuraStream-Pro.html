@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AuraStream | AI Video & Sound</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #050505;
+            color: white;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .gradient-text {
+            background: linear-gradient(90deg, #4F46E5, #EC4899);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-active {
+            border-bottom: 2px solid #6366f1;
+            color: #6366f1;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="flex items-center justify-between px-8 py-4 border-b border-gray-800">
+        <div class="text-2xl font-bold gradient-text">AuraStream Pro</div>
+        <div class="flex space-x-8 text-sm font-medium">
+            <button onclick="switchTab('create')" id="nav-create" class="nav-active pb-1">Create</button>
+            <button onclick="switchTab('gallery')" id="nav-gallery"
+                class="text-gray-400 hover:text-white pb-1">Gallery</button>
+            <button onclick="switchTab('settings')" id="nav-settings"
+                class="text-gray-400 hover:text-white pb-1">Settings</button>
+        </div>
+        <button class="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg text-sm transition font-semibold">Upgrade
+            to Enterprise</button>
+    </nav>
+
+    <main class="max-w-6xl mx-auto mt-10 p-6">
+
+        <!-- CREATE TAB -->
+        <div id="tab-create" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-1 space-y-6">
+                <!-- API KEY SETTINGS -->
+                <div class="glass p-6 rounded-2xl border-indigo-500/30">
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-indigo-400 mb-2">Kie AI
+                        Engine Connection</label>
+                    <input type="password" id="api-key"
+                        class="w-full bg-black border border-gray-700 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none text-gray-300"
+                        placeholder="Kie AI API Key..." value="2de6dba5c13f5379d3e3a23b2406a402">
+                    <p class="text-xs text-gray-500 mt-2">Available at <a href="https://kie.ai/api-key" target="_blank"
+                            class="text-indigo-400 hover:underline">kie.ai/api-key</a></p>
+                </div>
+
+                <div class="glass p-6 rounded-2xl">
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Reference
+                        Image URL (Required)</label>
+                    <input type="text" id="image-url"
+                        class="w-full bg-black border border-gray-700 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none text-gray-300 mb-6"
+                        placeholder="https://..."
+                        value="https://file.aiquickdraw.com/custom-page/akr/section-images/17594315607644506ltpf.jpg">
+
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">Visual
+                        Prompt</label>
+                    <textarea id="prompt"
+                        class="w-full bg-transparent border border-gray-700 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500 outline-none h-32"
+                        placeholder="Describe the scene...">A claymation conductor passionately leads a claymation orchestra, while the entire group joyfully sings in chorus.</textarea>
+
+                    <button onclick="generateVideo()" id="gen-btn"
+                        class="w-full mt-8 bg-white text-black font-bold py-3 rounded-xl hover:bg-gray-200 transition flex justify-center items-center gap-2">
+                        <span>🎬</span> Synthesize on Kie AI
+                    </button>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2 space-y-4">
+                <div id="video-placeholder"
+                    class="glass w-full aspect-video rounded-3xl flex flex-col items-center justify-center border-dashed border-2 border-gray-700 overflow-hidden relative">
+                    <div id="status-icon" class="mb-4 text-3xl">🌌</div>
+                    <p id="status-text" class="text-gray-500">Your AI generation will appear here.</p>
+                    <div id="loader" class="hidden w-48 h-1 bg-gray-800 rounded-full mt-4 overflow-hidden">
+                        <div class="bg-indigo-500 h-full w-0 transition-all duration-300" id="progress-bar"></div>
+                    </div>
+                </div>
+                <div class="flex justify-between items-center px-4">
+                    <span class="text-xs text-gray-500">Duration: 10s | Engine: <span class="text-indigo-400">Sora 2
+                            (Image-to-Video)</span></span>
+                    <button class="text-xs text-indigo-400 hover:underline">Download Output</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- GALLERY TAB -->
+        <div id="tab-gallery" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="glass aspect-video rounded-xl border border-gray-800 flex items-center justify-center">
+                <span class="text-gray-600 text-sm">Gallery is empty.</span>
+            </div>
+        </div>
+
+        <!-- SETTINGS TAB -->
+        <div id="tab-settings" class="hidden glass p-8 rounded-2xl max-w-2xl mx-auto mt-10">
+            <h2 class="text-xl font-bold mb-6">Engine Profiles</h2>
+            <div class="space-y-4 text-sm text-gray-300">
+                <p><strong>Primary Backend:</strong> Kie AI v1/jobs/createTask (Sora 2 Image to Video)</p>
+                <p><strong>Architecture:</strong> Async GPU Polling via v1/jobs/recordInfo</p>
+                <p><strong>Data Pipeline:</strong> S3 Bucket Upload</p>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // Tab Switching Logic
+        function switchTab(tabName) {
+            const tabs = ['create', 'gallery', 'settings'];
+            tabs.forEach(t => {
+                document.getElementById(`tab-${t}`).classList.add('hidden');
+                document.getElementById(`nav-${t}`).classList.remove('nav-active');
+                document.getElementById(`nav-${t}`).classList.add('text-gray-400');
+            });
+
+            document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+            document.getElementById(`nav-${tabName}`).classList.add('nav-active');
+            document.getElementById(`nav-${tabName}`).classList.remove('text-gray-400');
+        }
+
+        // Live API Generation Logic 
+        async function generateVideo() {
+            const apiKey = document.getElementById('api-key').value.trim();
+            const visuals = document.getElementById('prompt').value.trim();
+            const imageUrl = document.getElementById('image-url').value.trim();
+
+            if (!apiKey) {
+                alert("Please provide the Kie AI API Key.");
+                return;
+            }
+            if (!imageUrl) {
+                alert("Please provide the Reference Image URL.");
+                return;
+            }
+            if (!visuals) {
+                alert("Please provide a visual prompt.");
+                return;
+            }
+
+            const btn = document.getElementById('gen-btn');
+            const statusText = document.getElementById('status-text');
+            const loader = document.getElementById('loader');
+            const progress = document.getElementById('progress-bar');
+            const placeholder = document.getElementById('video-placeholder');
+            const statusIcon = document.getElementById('status-icon');
+
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin"></i> Synthesizing...`;
+            loader.classList.remove('hidden');
+
+            // Cleanup UI for next gen
+            statusIcon.style.display = 'block';
+            statusText.style.display = 'block';
+            placeholder.style.background = 'rgba(255, 255, 255, 0.05)';
+            const existingVid = document.getElementById('result-video');
+            if (existingVid) existingVid.remove();
+
+            try {
+                let finalVideoUrl = "";
+
+                statusText.innerText = `Dispatching Image-to-Video to Kie AI...`;
+                progress.style.width = '10%';
+
+                const createResp = await fetch("https://api.kie.ai/api/v1/jobs/createTask", {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${apiKey}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        model: "sora-2-image-to-video",
+                        input: {
+                            prompt: visuals,
+                            image_urls: [imageUrl]
+                        }
+                    })
+                });
+
+                if (!createResp.ok) {
+                    const err = await createResp.text();
+                    throw new Error(`Kie AI Request Error: ${err}`);
+                }
+
+                let initData = await createResp.json();
+
+                if (initData.code !== 200 || !initData.data || !initData.data.taskId) {
+                    throw new Error(`Task Initialization Failed: ${initData.msg || 'Unknown API Error'}`);
+                }
+
+                const taskId = initData.data.taskId;
+                progress.style.width = '20%';
+
+                // Poll for completion
+                let isCompleted = false;
+                while (!isCompleted) {
+                    statusText.innerText = `GPU Allocation: Rendering Frames...`;
+                    await new Promise(r => setTimeout(r, 4000));
+
+                    const pollResp = await fetch(`https://api.kie.ai/api/v1/jobs/recordInfo?taskId=${taskId}`, {
+                        headers: {
+                            "Authorization": `Bearer ${apiKey}`
+                        }
+                    });
+
+                    let pollData = await pollResp.json();
+
+                    if (pollData.code === 200 && pollData.data) {
+                        const state = pollData.data.state;
+
+                        if (state === "waiting" || state === "processing") {
+                            let simulatedPcnt = parseInt(progress.style.width) || 20;
+                            if (simulatedPcnt < 80) progress.style.width = `${simulatedPcnt + 4}%`;
+                        } else if (state === "success") {
+                            isCompleted = true;
+                            // resultJson might be a stringified object depending on API spec
+                            let parsedResult;
+                            try {
+                                parsedResult = JSON.parse(pollData.data.resultJson);
+                            } catch (e) {
+                                parsedResult = pollData.data.resultJson;
+                            }
+                            finalVideoUrl = parsedResult.resultUrls && parsedResult.resultUrls.length > 0 ? parsedResult.resultUrls[0] : "";
+                            progress.style.width = '90%';
+                        } else if (state === "fail") {
+                            throw new Error(`Generation failed: ${pollData.data.failMsg}`);
+                        }
+                    } else {
+                        throw new Error(`Polling failed: ${pollData.msg}`);
+                    }
+                }
+
+                if (!finalVideoUrl) throw new Error("Video URL missing in the completion packet.");
+
+                // Completion UI Updates
+                progress.style.width = '100%';
+                setTimeout(() => loader.classList.add('hidden'), 500);
+
+                statusIcon.style.display = 'none';
+                statusText.style.display = 'none';
+                placeholder.style.background = "#000";
+                placeholder.innerHTML += `<video id="result-video" src="${finalVideoUrl}" controls autoplay loop class="w-full h-full object-cover rounded-3xl z-10 absolute inset-0"></video>`;
+
+                // Add to Gallery Tab
+                const galleryTab = document.getElementById('tab-gallery');
+                if (galleryTab.innerHTML.includes('Gallery is empty')) galleryTab.innerHTML = '';
+
+                const newCard = `
+                    <div class="glass aspect-video rounded-xl border border-gray-800 overflow-hidden relative group">
+                        <video src="${finalVideoUrl}" class="w-full h-full object-cover"></video>
+                        <div class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all duration-300">
+                            <span class="bg-indigo-600 text-white rounded-full w-12 h-12 flex items-center justify-center cursor-pointer shadow-lg shadow-indigo-500/50 hover:scale-110 transition"><i class="fa-solid fa-play"></i></span>
+                        </div>
+                    </div>
+                `;
+                galleryTab.insertAdjacentHTML('afterbegin', newCard);
+
+            } catch (error) {
+                console.error(error);
+                statusText.innerText = `Synthesis Failed\n${error.message}`;
+                statusIcon.innerText = "❌";
+                loader.classList.add('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<span>🎬</span> Synthesize on Kie AI`;
+            }
+        }
+    </script>
+</body>
+
+</html>
